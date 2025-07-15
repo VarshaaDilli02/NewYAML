@@ -1,0 +1,28 @@
+trigger:
+  - main
+
+variables:
+  azureSubscription: 'AzureConnection'   # Replace with your service connection name
+  keyVaultName: 'my-keyvault-dev'        # Replace with your Key Vault name
+
+stages:
+- stage: Deploy
+  jobs:
+  - job: DeployWithSecrets
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        KeyVaultName: '$(keyVaultName)'
+        SecretsFilter: '*'
+        RunAsPreJob: true
+
+    - script: |
+        echo "🔐 Secret is injected securely."
+        echo "Never log real secret values."
+        echo "Deployment complete."
+      env:
+        DB_PASSWORD: $(DB_PASSWORD)   # Secret pulled from Key Vault
